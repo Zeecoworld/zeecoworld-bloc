@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #9b4a9b;
+  --primary-dark: #7d3c7d;
+  --secondary: #222222;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --gray: #6c757d;
+  --white: #ffffff;
+  --background: var(--white);
+  --foreground: var(--dark);
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary: var(--secondary);
+  --color-light: var(--light);
+  --color-dark: var(--dark);
+  --color-gray: var(--gray);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
+}
+
+.prose-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--dark);
+}
+
+.prose-content h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+
+.prose-content p {
+  margin-bottom: 1.1rem;
+  line-height: 1.75;
+  color: var(--dark);
+}
+
+.prose-content a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.prose-content ul,
+.prose-content ol {
+  margin-bottom: 1.1rem;
+  padding-left: 1.5rem;
+  line-height: 1.75;
+}
+
+.prose-content li {
+  margin-bottom: 0.4rem;
+}
+
+.prose-content code {
+  background: var(--light);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.prose-content pre {
+  background: var(--secondary);
+  color: var(--white);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-bottom: 1.1rem;
+}
+
+.prose-content pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose-content blockquote {
+  border-left: 3px solid var(--primary);
+  padding-left: 1rem;
+  color: var(--gray);
+  margin-bottom: 1.1rem;
+}
+
+.prose-content img {
+  border-radius: 10px;
+  margin: 1.5rem 0;
+}
