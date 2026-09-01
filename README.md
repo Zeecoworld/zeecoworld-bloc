@@ -7,7 +7,7 @@ it is.
 ## What's inside
 
 - **Public pages:** `/` (post list) and `/[slug]` (single post) — styled to
-  match zeecomedia.net's colors and fonts.
+  match zeecomedia.net's colors and font.
 - **Admin:** `/admin/login`, `/admin` (dashboard), `/admin/new`,
   `/admin/edit/[id]` — create, edit, publish/unpublish, and delete posts,
   with drag-free "click to upload" cover images (stored in Supabase
