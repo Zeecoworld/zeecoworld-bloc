@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/posts";
+import { pingIndexNow } from "@/lib/indexnow";
 
 export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "");
@@ -52,6 +53,11 @@ export async function createPost(formData: FormData) {
   }
 
   revalidatePath("/");
+
+  if (published) {
+    await pingIndexNow([`https://zeecomedia.net/blog/${slug}`]);
+  }
+
   redirect("/admin");
 }
 
@@ -83,6 +89,11 @@ export async function updatePost(id: string, formData: FormData) {
 
   revalidatePath("/");
   revalidatePath(`/${slug}`);
+
+  if (published) {
+    await pingIndexNow([`https://zeecomedia.net/blog/${slug}`]);
+  }
+
   redirect("/admin");
 }
 
@@ -93,9 +104,14 @@ export async function deletePost(id: string) {
   redirect("/admin");
 }
 
-export async function togglePublish(id: string, published: boolean) {
+export async function togglePublish(id: string, slug: string, published: boolean) {
   const supabase = await createClient();
-  await supabase.from("posts").update({ published: !published }).eq("id", id);
+  const nowPublished = !published;
+  await supabase.from("posts").update({ published: nowPublished }).eq("id", id);
   revalidatePath("/");
   revalidatePath("/admin");
+
+  if (nowPublished) {
+    await pingIndexNow([`https://zeecomedia.net/blog/${slug}`]);
+  }
 }

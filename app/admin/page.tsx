@@ -62,7 +62,7 @@ export default async function AdminDashboard() {
               <form
                 action={async () => {
                   "use server";
-                  await togglePublish(post.id, post.published);
+                  await togglePublish(post.id, post.slug, post.published);
                 }}
               >
                 <button
