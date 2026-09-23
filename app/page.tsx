@@ -1,18 +1,28 @@
-import Link from "next/link";
-import Image from "next/image";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, readingTime, type Post } from "@/lib/posts";
+import { POSTS_PER_PAGE, type Post } from "@/lib/posts";
+import { PostList } from "@/components/PostList";
+import { Pagination } from "@/components/Pagination";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://zeecomedia.net/blog",
+  },
+};
+
 export default async function BlogIndex() {
   const supabase = await createClient();
-  const { data: posts } = await supabase
+  const { data: posts, count } = await supabase
     .from("posts")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("published", true)
     .order("created_at", { ascending: false })
+    .range(0, POSTS_PER_PAGE - 1)
     .returns<Post[]>();
+
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / POSTS_PER_PAGE));
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
@@ -26,44 +36,8 @@ export default async function BlogIndex() {
         </p>
       </div>
 
-      {(!posts || posts.length === 0) && (
-        <div className="border border-dashed border-gray-200 rounded-xl p-12 text-center text-[var(--gray)]">
-          No posts yet. Check back soon.
-        </div>
-      )}
-
-      <div className="grid gap-8">
-        {posts?.map((post) => (
-          <Link
-            key={post.id}
-            href={`/${post.slug}`}
-            className="group flex flex-col sm:flex-row gap-6 items-start rounded-xl p-4 -mx-4 hover:bg-[var(--light)] transition-colors"
-          >
-            {post.cover_image && (
-              <div className="relative w-full sm:w-56 h-40 shrink-0 rounded-lg overflow-hidden bg-[var(--light)]">
-                <Image
-                  src={post.cover_image}
-                  alt={post.title}
-                  fill
-                  className="object-cover"
-                  sizes="224px"
-                />
-              </div>
-            )}
-            <div className="flex-1">
-              <p className="text-sm text-[var(--gray)] mb-2">
-                {formatDate(post.created_at)} · {readingTime(post.content)} min read
-              </p>
-              <h2 className="text-xl font-semibold text-[var(--dark)] group-hover:text-[var(--primary)] transition-colors mb-2">
-                {post.title}
-              </h2>
-              {post.excerpt && (
-                <p className="text-[var(--gray)] line-clamp-2">{post.excerpt}</p>
-              )}
-            </div>
-          </Link>
-        ))}
-      </div>
+      <PostList posts={posts ?? []} />
+      <Pagination currentPage={1} totalPages={totalPages} />
     </div>
   );
 }
