@@ -52,6 +52,9 @@ export function readingTime(content: string): number {
 export function normalizePostContent(content: string): string {
   let lines = content
     .replace(/\r\n/g, "\n")
+    // Stray labels copied along with a chat "markdown" code block.
+    .replace(/^#{1,6}[ \t]*complete markdown blog post[ \t]*$/gim, "")
+    .replace(/^[ \t]*markdown[ \t]*\n(?=\s*(```|~~~))/gim, "")
     .replace(/^(\s*\n)+/, "")
     .trimEnd()
     .split("\n");
