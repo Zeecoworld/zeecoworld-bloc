@@ -1,43 +1,80 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown";
 import { createClient } from "@/lib/supabase/server";
-import { POSTS_PER_PAGE, type Post } from "@/lib/posts";
-import { PostList } from "@/components/PostList";
-import { Pagination } from "@/components/Pagination";
+import { formatDate, readingTime, type Post } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  alternates: {
-    canonical: "https://zeecomedia.net/blog",
-  },
+type Props = {
+  params: Promise<{ slug: string }>;
 };
 
-export default async function BlogIndex() {
+async function getPost(slug: string): Promise<Post | null> {
   const supabase = await createClient();
-  const { data: posts, count } = await supabase
+  const { data } = await supabase
     .from("posts")
-    .select("*", { count: "exact" })
+    .select("*")
+    .eq("slug", slug)
     .eq("published", true)
-    .order("created_at", { ascending: false })
-    .range(0, POSTS_PER_PAGE - 1)
-    .returns<Post[]>();
+    .maybeSingle<Post>();
+  return data ?? null;
+}
 
-  const totalPages = Math.max(1, Math.ceil((count ?? 0) / POSTS_PER_PAGE));
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPost(slug);
+  if (!post) return { title: "Post not found" };
+
+  return {
+    title: post.title,
+    description: post.excerpt ?? undefined,
+    alternates: { canonical: `https://zeecomedia.net/blog/${post.slug}` },
+    openGraph: {
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      images: post.cover_image ? [post.cover_image] : undefined,
+    },
+  };
+}
+
+export default async function BlogPost({ params }: Props) {
+  const { slug } = await params;
+  const post = await getPost(slug);
+
+  if (!post) notFound();
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-16">
-      <div className="mb-12">
-        <h1 className="text-3xl md:text-4xl font-semibold text-[var(--dark)] mb-3">
-          From the Zeecomedia team
-        </h1>
-        <p className="text-[var(--gray)] max-w-xl">
-          Notes on building web, mobile, API, and AI systems — the practical
-          kind, from projects we&apos;ve actually shipped.
-        </p>
-      </div>
+    <article className="max-w-3xl mx-auto px-6 py-16">
+      <Link href="/" className="text-sm text-[var(--gray)] hover:text-[var(--primary)]">
+        ← Back to blog
+      </Link>
 
-      <PostList posts={posts ?? []} />
-      <Pagination currentPage={1} totalPages={totalPages} />
-    </div>
+      <h1 className="text-3xl md:text-4xl font-semibold text-[var(--dark)] mt-6 mb-3">
+        {post.title}
+      </h1>
+      <p className="text-sm text-[var(--gray)] mb-8">
+        {formatDate(post.created_at)} · {readingTime(post.content)} min read
+      </p>
+
+      {post.cover_image && (
+        <div className="relative w-full h-72 rounded-xl overflow-hidden mb-10">
+          <Image
+            src={post.cover_image}
+            alt={post.title}
+            fill
+            className="object-cover"
+            sizes="768px"
+            priority
+          />
+        </div>
+      )}
+
+      <div className="prose-post">
+        <ReactMarkdown>{post.content}</ReactMarkdown>
+      </div>
+    </article>
   );
 }
