@@ -99,3 +99,47 @@ body {
   border-radius: 10px;
   margin: 1.5rem 0;
 }
+
+/* Extra markdown elements (Tailwind's preflight strips browser defaults) */
+.prose-content h1 {
+  font-size: 1.9rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: var(--dark);
+}
+
+.prose-content h4 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: var(--dark);
+}
+
+.prose-content strong {
+  font-weight: 600;
+}
+
+.prose-content em {
+  font-style: italic;
+}
+
+.prose-content ul {
+  list-style: disc;
+}
+
+.prose-content ol {
+  list-style: decimal;
+}
+
+.prose-content hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+
+.prose-content img {
+  max-width: 100%;
+  height: auto;
+}
