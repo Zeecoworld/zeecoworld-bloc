@@ -36,22 +36,52 @@ export function readingTime(content: string): number {
 }
 
 /**
- * Cleans up post content that was pasted from a chat/AI "markdown" code block.
- * - If the content contains a ```markdown (or ```md) fence, only the text
- *   inside that fence is kept, so it renders as formatted markdown instead of
- *   a black code block.
+ * Cleans up post content that was pasted from a chat/AI "markdown" code block,
+ * so it renders as normal formatted markdown instead of a black code box.
+ *
+ * - If the post is wrapped in a code fence (``` or ~~~, labelled markdown/md or
+ *   unlabelled) that opens near the top and closes near the end, only the text
+ *   inside is kept. Everything before it (stray headings, a "Markdown" label)
+ *   is dropped.
+ * - If the whole post is an indented code block (4 spaces / tab), it is dedented.
  * - A leading "# Title" line is removed, because the page already shows the
- *   post title as its <h1>.
+ *   title as its <h1>.
+ *
+ * Normal articles that merely contain a few code samples are left untouched.
  */
 export function normalizePostContent(content: string): string {
-  let text = content.replace(/\r\n/g, "\n").trim();
+  let lines = content
+    .replace(/\r\n/g, "\n")
+    .replace(/^(\s*\n)+/, "")
+    .trimEnd()
+    .split("\n");
 
-  const fenced = text.match(/```(?:markdown|md)[^\n]*\n([\s\S]*)\n```\s*$/i);
-  if (fenced) {
-    text = fenced[1].trim();
+  const fenceRe = /^\s*(`{3,}|~{3,})\s*([A-Za-z0-9_+-]*)/;
+  const fenceIdx: number[] = [];
+  lines.forEach((line, i) => {
+    if (fenceRe.test(line)) fenceIdx.push(i);
+  });
+
+  if (fenceIdx.length >= 2) {
+    const first = fenceIdx[0];
+    const last = fenceIdx[fenceIdx.length - 1];
+    const lang = (lines[first].match(fenceRe)?.[2] ?? "").toLowerCase();
+    const labelOk = lang === "" || lang === "markdown" || lang === "md";
+    const trailing = lines.slice(last + 1).filter((l) => l.trim()).length;
+    const leading = lines.slice(0, first).filter((l) => l.trim()).length;
+
+    if (labelOk && trailing === 0 && leading <= 8) {
+      lines = lines.slice(first + 1, last);
+    }
   }
 
-  text = text.replace(/^#\s+.+\n+/, "");
+  const nonEmpty = lines.filter((l) => l.trim());
+  const indented = nonEmpty.filter((l) => /^( {4}|\t)/.test(l)).length;
+  if (nonEmpty.length > 0 && indented / nonEmpty.length > 0.8) {
+    lines = lines.map((l) => l.replace(/^( {4}|\t)/, ""));
+  }
 
+  let text = lines.join("\n").trim();
+  text = text.replace(/^#\s+.+\n+/, "");
   return text;
 }
