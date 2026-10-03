@@ -4,7 +4,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import { createClient } from "@/lib/supabase/server";
-import { formatDate, readingTime, type Post } from "@/lib/posts";
+import {
+  formatDate,
+  normalizePostContent,
+  readingTime,
+  type Post,
+} from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +51,8 @@ export default async function BlogPost({ params }: Props) {
 
   if (!post) notFound();
 
+  const content = normalizePostContent(post.content);
+
   return (
     <article className="max-w-3xl mx-auto px-6 py-16">
       <Link href="/" className="text-sm text-[var(--gray)] hover:text-[var(--primary)]">
@@ -56,7 +63,7 @@ export default async function BlogPost({ params }: Props) {
         {post.title}
       </h1>
       <p className="text-sm text-[var(--gray)] mb-8">
-        {formatDate(post.created_at)} · {readingTime(post.content)} min read
+        {formatDate(post.created_at)} · {readingTime(content)} min read
       </p>
 
       {post.cover_image && (
@@ -73,7 +80,7 @@ export default async function BlogPost({ params }: Props) {
       )}
 
       <div className="prose-content">
-        <ReactMarkdown>{post.content}</ReactMarkdown>
+        <ReactMarkdown>{content}</ReactMarkdown>
       </div>
     </article>
   );
