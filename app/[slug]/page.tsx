@@ -72,7 +72,7 @@ export default async function BlogPost({ params }: Props) {
         </div>
       )}
 
-      <div className="prose-post">
+      <div className="prose-content">
         <ReactMarkdown>{post.content}</ReactMarkdown>
       </div>
     </article>
