@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+import { PostContent } from "@/components/PostContent";
 import { createClient } from "@/lib/supabase/server";
 import {
   formatDate,
@@ -80,7 +80,7 @@ export default async function BlogPost({ params }: Props) {
       )}
 
       <div className="prose-content">
-        <ReactMarkdown>{content}</ReactMarkdown>
+        <PostContent content={post.content} />
       </div>
     </article>
   );
